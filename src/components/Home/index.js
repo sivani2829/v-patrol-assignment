@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import "./index.css";
 import { LeftArrow, RightArrow } from "../../projectIcons/icons";
@@ -13,6 +13,7 @@ const weekdays = [
   { id: 6, day: "Fri" },
   { id: 7, day: "Sat" },
 ];
+let random;
 let time = [];
 for (let i = 0; i < 24; i++) {
   if (i < 12) {
@@ -26,7 +27,7 @@ const bgColors = [
   "bg-primary",
   "bg-info",
   "bg-success",
-  "bg-light",
+  "bg-secondary",
   "bg-warning",
 ];
 
@@ -57,23 +58,24 @@ const Home = () => {
   const update = (e) => {
     console.log(e.key);
     if (e.key === "Enter") {
+      random = Math.floor(Math.random() * 5);
+      setColor(bgColors[random]);
       const updatedList = eventList.map((e) => {
         if (e.id === currentId) {
-          return { ...e, content: currentInput };
+          return { ...e, content: currentInput, color };
         }
         return e;
       });
 
       setEventList(updatedList);
-      setCurrentInput("");
+      // setCurrentInput("");
       setCurrentId();
-      let random = Math.floor(Math.random() * 5);
-      setColor(bgColors[random]);
     } else {
       setCurrentInput(e.target.value);
     }
   };
   console.log("event-list", eventList);
+  console.log("rrrrrr", random);
 
   const renderTime = () => {
     return (
@@ -116,7 +118,11 @@ const Home = () => {
                 // style={{ backgroundColor: color }}
               />
             ) : (
-              <div className="box d-flex flex-column justify-content-center align-items-center">
+              <div
+                className={`box d-flex flex-column justify-content-center align-items-center text-light ${
+                  e.content !== "" && e.color
+                }`}
+              >
                 <p>{e.content}</p>
                 <p>{e.content !== "" && e.date}</p>
                 <p>{e.content !== "" && e.slot}</p>
@@ -147,6 +153,7 @@ const Home = () => {
           ];
         }
       }
+
       setEventList(g2);
 
       setStartDate((prev) => prev - 7);
@@ -161,6 +168,7 @@ const Home = () => {
       return;
     } else {
       let gridList1 = [];
+
       for (let i = 1; i < 24; i++) {
         for (let j = endDate + 1; j < endDate + 8; j++) {
           gridList1 = [
@@ -175,6 +183,7 @@ const Home = () => {
           ];
         }
       }
+
       setEventList(gridList1);
       setStartDate((prev) => prev + 7);
       setEndDate((prev) => prev + 7);
