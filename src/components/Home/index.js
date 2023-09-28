@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import "./index.css";
-import { LeftArrow, RightArrow } from "../../projectIcons/icons";
+import { LeftArrow, RightArrow, Calender } from "../../projectIcons/icons";
 
 const sectionBar = ["week", "Day", "Month", "year"];
 const weekdays = [
@@ -22,60 +22,86 @@ for (let i = 0; i < 24; i++) {
     time = [...time, `${i}.30 PM`];
   }
 }
-let gridList = [];
 const bgColors = [
   "bg-primary",
   "bg-info",
   "bg-success",
   "bg-secondary",
   "bg-warning",
+  "bg-dark",
+  "bg-danger",
 ];
 
 const Home = () => {
   const [currentId, setCurrentId] = useState();
   const [currentInput, setCurrentInput] = useState("");
-  const [eventList, setEventList] = useState(gridList);
   const [startDate, setStartDate] = useState(1);
   const [endDate, setEndDate] = useState(7);
   const [color, setColor] = useState(bgColors[0]);
-
-  for (let i = 1; i < 24; i++) {
-    for (let j = 1; j < 8; j++) {
-      gridList = [
-        ...gridList,
-        {
-          id: uuidv4(),
-          content: "",
-          slot: time[i - 1] + "-" + time[i],
-          date: startDate + j - 1,
-          serialNo: j - 1,
-        },
-      ];
+  const [gridObj, setGridObj] = useState(() => {
+    const initialGridObj = {};
+    for (let m = 0; m < 4; m++) {
+      const gridList = [];
+      for (let i = 1; i < 24; i++) {
+        for (let j = 1; j < 8; j++) {
+          gridList.push({
+            id: uuidv4(),
+            content: "",
+            slot: time[i - 1] + "-" + time[i],
+            date: startDate + j - 1,
+            serialNo: j - 1,
+          });
+        }
+      }
+      initialGridObj[m] = gridList;
     }
-  }
-  console.log("gggggggggggggggggggg", gridList);
+    return initialGridObj;
+  });
 
+  // for (let m = 0; m < 4; m++) {
+  //   gridList = [];
+  //   for (let i = 1; i < 24; i++) {
+  //     for (let j = 1; j < 8; j++) {
+  //       gridList = [
+  //         ...gridList,
+  //         {
+  //           id: uuidv4(),
+  //           content: "",
+  //           slot: time[i - 1] + "-" + time[i],
+  //           date: startDate + j - 1,
+  //           serialNo: j - 1,
+  //         },
+  //       ];
+  //     }
+  //   }
+  //   // setGridObj({ ...gridObj, [m]: gridList });
+  //   setGridObj((prev) => ({ ...prev, [m]: gridList }));
+  // }
+  console.log("grid object----------", gridObj);
+  console.log("ssssss----------", startDate);
+  const decideGrid = {
+    1: 0,
+    8: 1,
+    15: 2,
+    22: 3,
+  };
   const update = (e) => {
     console.log(e.key);
     if (e.key === "Enter") {
-      random = Math.floor(Math.random() * 5);
+      random = Math.floor(Math.random() * 7);
       setColor(bgColors[random]);
-      const updatedList = eventList.map((e) => {
+      const updatedList = gridObj[decideGrid[startDate]].map((e) => {
         if (e.id === currentId) {
           return { ...e, content: currentInput, color };
         }
         return e;
       });
-
-      setEventList(updatedList);
-      // setCurrentInput("");
+      setGridObj((prev) => ({ ...prev, [decideGrid[startDate]]: updatedList }));
       setCurrentId();
     } else {
       setCurrentInput(e.target.value);
     }
   };
-  console.log("event-list", eventList);
-  console.log("rrrrrr", random);
 
   const renderTime = () => {
     return (
@@ -83,7 +109,7 @@ const Home = () => {
         {time.map((e, i) => (
           <li
             key={i}
-            className="box-1 align-items-end"
+            className="box-1 align-items-end text-dark font-weight-bold"
             style={{ position: "relative" }}
           >
             <p style={{ position: "absolute", top: "-13px", left: "-70px" }}>
@@ -96,70 +122,55 @@ const Home = () => {
   };
 
   const renderGrid = () => {
-    return (
-      <div className="d-flex flex-wrap">
-        {eventList.map((e) => (
-          <div
-            className="box"
-            key={e.id}
-            onClick={() => {
-              setCurrentId(e.id);
-              setCurrentInput(e.content);
-            }}
-          >
-            {currentId === e.id ? (
-              <textarea
-                className={`box ${color}`}
-                type="text"
-                placeholder="Add Event"
-                value={currentInput}
-                onChange={(e) => setCurrentInput(e.target.value)}
-                onKeyDown={update}
-                // style={{ backgroundColor: color }}
-              />
-            ) : (
-              <div
-                className={`box d-flex flex-column justify-content-center align-items-center text-light ${
-                  e.content !== "" && e.color
-                }`}
-              >
-                <p>{e.content}</p>
-                <p>{e.content !== "" && e.date}</p>
-                <p>{e.content !== "" && e.slot}</p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    );
+    let g1 = gridObj[decideGrid[startDate]];
+    if (!g1) {
+      return;
+    } else {
+      return (
+        <div className="d-flex flex-wrap">
+          {gridObj[decideGrid[startDate]].map((e) => (
+            <div
+              className="box"
+              key={e.id}
+              onClick={() => {
+                setCurrentId(e.id);
+                setCurrentInput(e.content);
+              }}
+            >
+              {currentId === e.id ? (
+                <textarea
+                  className="box "
+                  type="text"
+                  placeholder="Add Event"
+                  value={currentInput}
+                  onChange={(e) => setCurrentInput(e.target.value)}
+                  onKeyDown={update}
+                />
+              ) : (
+                <div
+                  className={`box d-flex flex-column justify-content-center align-items-center text-light ${
+                    e.content !== "" && e.color
+                  }`}
+                >
+                  <p className="text-light font-weight-bold">{e.content}</p>
+                  <p className="text-light font-weight-bold">
+                    {e.content !== "" && e.slot}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
   };
 
   const handleLeftArrow = () => {
     if (startDate === 1) {
       return;
     } else {
-      let g2 = [];
-      for (let i = 1; i < 24; i++) {
-        for (let j = startDate - 7; j < endDate - 6; j++) {
-          g2 = [
-            ...g2,
-            {
-              id: uuidv4(),
-              content: "",
-              slot: time[i - 1] + "-" + time[i],
-              date: j,
-              serialNo: j - 1,
-            },
-          ];
-        }
-      }
-
-      setEventList(g2);
-
       setStartDate((prev) => prev - 7);
       setEndDate((prev) => prev - 7);
-
-      console.log("g222222222222222", g2);
     }
   };
 
@@ -167,70 +178,55 @@ const Home = () => {
     if (endDate === 28) {
       return;
     } else {
-      let gridList1 = [];
-
-      for (let i = 1; i < 24; i++) {
-        for (let j = endDate + 1; j < endDate + 8; j++) {
-          gridList1 = [
-            ...gridList1,
-            {
-              id: uuidv4(),
-              content: "",
-              slot: time[i - 1] + "-" + time[i],
-              date: j,
-              serialNo: j - 1,
-            },
-          ];
-        }
-      }
-
-      setEventList(gridList1);
       setStartDate((prev) => prev + 7);
       setEndDate((prev) => prev + 7);
-      console.log("g1", gridList1);
     }
   };
-  console.log(startDate, endDate, "nnnn");
 
   return (
     <>
-      <div className="d-flex justify-content-between p-3">
-        <h3 className="m-2">Timeline</h3>
-        <div className="d-flex flex-row justify-content-center align-items-center">
-          <div>
-            <select className="p-0 m-0">
-              {sectionBar.map((e, i) => (
-                <option key={i}>{e}</option>
-              ))}
-            </select>
-          </div>
-          <p className="p-0">{`${startDate}-${endDate} `}December,2019</p>
-          <div className="d-flex">
-            <button className="" onClick={handleLeftArrow}>
-              <LeftArrow />
-            </button>
-            <button onClick={handleRightArrow}>
-              <RightArrow />
-            </button>
+      <div className="d-flex justify-content-center align-items-center">
+        <div className="d-flex justify-content-between  align-items-center  p-3 nav-cont ">
+          <h3 className="m-2">Timeline</h3>
+          <div className="d-flex flex-row justify-content-center align-items-center ">
+            <div className="border border-secondary p-2 mr-3">
+              <Calender />
+              <select className="p-0 m-0 select-box">
+                {sectionBar.map((e, i) => (
+                  <option key={i}>{e}</option>
+                ))}
+              </select>
+            </div>
+            <p className="p-0  mr-3 align-self-center m-0 text-dark font-weight-bold ">
+              {`${startDate}-${endDate} `} December,2019
+            </p>
+            <div className="d-flex">
+              <button className="" onClick={handleLeftArrow}>
+                <LeftArrow />
+              </button>
+              <button onClick={handleRightArrow}>
+                <RightArrow />
+              </button>
+            </div>
           </div>
         </div>
       </div>
       <div className="">
-        <ul className=" list-unstyled border border-primary d-flex ">
+        <div className="  d-flex ">
           <div className="col-2"></div>
-          <div className="col-10 d-flex pl-0">
+          <ul className=" d-flex  list-unstyled">
             {weekdays.map((e) => (
               <li
                 key={e.id}
-                className="day-box d-flex justify-content-center align-items-center"
+                className="day-box d-flex justify-content-center align-items-center text-dark font-weight-bold "
               >
                 <p className="hover-class">{`${e.day} ${
                   startDate + e.id - 1
                 }`}</p>
               </li>
             ))}
-          </div>
-        </ul>
+          </ul>
+        </div>
       </div>
       <div className="d-flex flex-row">
         <div className=" col-2">{renderTime()}</div>
